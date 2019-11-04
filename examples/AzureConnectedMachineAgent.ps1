@@ -37,7 +37,7 @@ Configuration AzureConnectedMachineAgent {
         [PSCredential]$Credential
     )
     Import-DscResource -ModuleName PSDSCResources
-    Import-DscResource -Module @{ModuleName = 'AzureConnectedMachineAgentDsc'; ModuleVersion = '1.0.0.0'}
+    Import-DscResource -Module @{ModuleName = 'AzureConnectedMachineDsc'; ModuleVersion = '1.0.0.0'}
 
     Node $AllNodes.NodeName
     {

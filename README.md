@@ -1,4 +1,4 @@
-# Azure Connected Machine Agent module for Windows PowerShell DSC
+# Azure Connected Machine module for Windows PowerShell DSC
 
 This repository contains the module for Windows PowerShell Desired State Configuration to install and configure
 the Azure Connected Machine Agent.

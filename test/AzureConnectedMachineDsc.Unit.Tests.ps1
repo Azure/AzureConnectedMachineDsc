@@ -1,4 +1,4 @@
-$ModuleManifestName = 'AzureConnectedMachineAgentDsc.psd1'
+$ModuleManifestName = 'AzureConnectedMachineDsc.psd1'
 $ModuleManifestPath = "$PSScriptRoot\..\$ModuleManifestName"
 Import-Module $ModuleManifestPath -Force
 Import-Module $PSScriptRoot\..\DscResources\Helpers.psm1 -Force
