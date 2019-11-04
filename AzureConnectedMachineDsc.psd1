@@ -9,7 +9,7 @@
 @{
 
 # Version number of this module.
-ModuleVersion = '1.0.0.0'
+ModuleVersion = '1.0.1.0'
 
 # ID used to uniquely identify this module
 GUID = '4e7bcccd-6002-47b5-8b9f-fcca5975d445'
@@ -50,16 +50,16 @@ PrivateData = @{
         Tags = @('Azure','AzureArc','Arc','AzureConnectedMachine','DesiredStateConfiguration', 'DSC', 'DSCResource')
 
         # A URL to the license for this module.
-        LicenseUri = 'https://github.com/azure/AzureConnectedMachineDsc/license'
+        LicenseUri = 'https://raw.githubusercontent.com/Azure/AzureConnectedMachineDsc/master/LICENSE'
 
         # A URL to the main website for this project.
         ProjectUri = 'https://github.com/azure/AzureConnectedMachineDsc'
 
         # A URL to an icon representing this module.
-        IconUri = 'https://github.com/azure/AzureConnectedMachineDsc/icon.png'
+        IconUri = 'https://raw.githubusercontent.com/Azure/AzureConnectedMachineDsc/master/icon.png'
 
         # ReleaseNotes of this module
-        ReleaseNotes = 'https://github.com/azure/AzureConnectedMachineDsc/changelog.md'
+        ReleaseNotes = 'https://raw.githubusercontent.com/Azure/AzureConnectedMachineDsc/master/changelog.md'
 
         # Prerelease string of this module
         # Prerelease = ''
