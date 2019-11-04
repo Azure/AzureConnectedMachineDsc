@@ -1,3 +1,7 @@
+**1.0.1.0**
+
+- Fixed links in manifest 
+
 **1.0.0.0**
 
 - Functional project to configure the AZ CM agent
