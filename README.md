@@ -1,53 +1,82 @@
----
-page_type: sample
-languages:
-- csharp
-products:
-- dotnet
-description: "Add 150 character max description"
-urlFragment: "update-this-to-unique-url-stub"
----
+# Azure Connected Machine Agent module for Windows PowerShell DSC
 
-# Official Microsoft Sample
-
-<!-- 
-Guidelines on README format: https://review.docs.microsoft.com/help/onboard/admin/samples/concepts/readme-template?branch=master
-
-Guidance on onboarding samples to docs.microsoft.com/samples: https://review.docs.microsoft.com/help/onboard/admin/samples/process/onboarding?branch=master
-
-Taxonomies for products and languages: https://review.docs.microsoft.com/new-hope/information-architecture/metadata/taxonomies?branch=master
--->
-
-Give a short description for your sample here. What does it do and why is it important?
+This repository contains the module for Windows PowerShell Desired State Configuration to install and configure
+the Azure Connected Machine Agent.
 
 ## Contents
 
-Outline the file contents of the repository. It helps users navigate the codebase, build configuration and any related assets.
+The files and folders in this repo include:
 
-| File/folder       | Description                                |
-|-------------------|--------------------------------------------|
-| `src`             | Sample source code.                        |
-| `.gitignore`      | Define what to ignore at commit time.      |
-| `CHANGELOG.md`    | List of changes to the sample.             |
-| `CONTRIBUTING.md` | Guidelines for contributing to the sample. |
-| `README.md`       | This README file.                          |
-| `LICENSE`         | The license for the sample.                |
+| File/folder          | Description                                  |
+|----------------------|----------------------------------------------|
+| `DSCResources`       | Folder containing each DSC resource          |
+| `examples`           | Folder containing configuration examples     |
+| `test`               | Folder containing unit and integration tests |
+| `CHANGELOG.md`       | List of changes to the sample.               |
+| `CODE_OF_CONDUCT.md` | Code of conduct for project contribution.    |
+| `README.md`          | This README file.                            |
+| `LICENSE`            | The license for the project.                 |
 
-## Prerequisites
+## Resources included in this module
 
-Outline the required components and tools that a user might need to have on their machine in order to run the sample. This can be anything from frameworks, SDKs, OS versions or IDE releases.
+- **AzureConnectedMachineAgentDsc**: Used to automate configuration of the Azure Connected Machine Agent including validation of the connection to Azure and the metadata such as the Resource Group and Tags information.
+
+## Requirements
+
+The minimum PowerShell version required is 4.0, which ships in Windows 8.1
+or Windows Server 2012R2 (or higher versions). The preferred version is
+PowerShell 5.0 or higher, which ships with Windows 10 or Windows Server 2016.
 
 ## Setup
 
-Explain how to prepare the sample once the user clones or downloads the repository. The section should outline every step necessary to install dependencies and set up any settings (for example, API keys and output folders).
+To manually install the module, download the source code and unzip the contents
+of the project directory to the
+`$env:ProgramFiles\WindowsPowerShell\Modules folder`.
 
-## Runnning the sample
+To install from the PowerShell gallery using PowerShellGet (in PowerShell 5.0)
+run the following command:
 
-Outline step-by-step instructions to execute the sample and see its output. Include steps for executing the sample from the IDE, starting specific services in the Azure portal or anything related to the overall launch of the code.
+    Find-Module -Name AzureConnectedMachineDsc -Repository PSGallery | Install-Module
 
-## Key concepts
+To confirm installation, run the below command and ensure you see the
+Azure Connected Machine DSC resoures available:
 
-Provide users with more context on the tools and services used in the sample. Explain some of the code that is being used and how services interact with each other.
+    Get-DscResource -Module AzureConnectedMachineDsc
+
+## Examples
+
+The resources in this module are intended to manage the Azure Connected Machine Agent configuration. A complete
+example is provided that also uses community resources to download and install the agent, and to verify the state
+of the agent service.
+
+PowerShell script:
+
+```powershell
+& .\examples\AzureConnectedMachineAgent.ps1
+```
+
+The script parameters include:
+
+- **TenantID**: The id (guid) of the Azure tenant
+- **SubscriptionId**: The id (guid) of the Azure subscription
+- **ResourceGroup**: The name of the resource group where the connect machine resource should be created
+- **Location**: The Azure location where the connected machine resource should be created
+- **Tags**: String array of tags that should be applied to the connected machine resource
+- **Credential**: A PowerShell credential object with the AppId and Secret used to register machines at scale
+
+The Azure Connected Machine Agent supports connecting through an http proxy service.  The
+proxy details are provided to the agent using envionment variables, which could also be managed by DSC
+using the ComputeManagementDsc module.  For more information on the proxy details, see the
+documentation for Azure Connect Machine Agent.
+
+## Adding to existing configurations
+
+This resource can be added to existing DSC configurations to represent an end-to-end configuration
+for a machine.  For example, you might wish to add this resource to a configuration that sets
+secure operating system settings.
+
+The **CompsiteResource** module from the PowerShell Gallery can be used to create a composite
+resource of the example configuration, to further simplify combining configurations.
 
 ## Contributing
 

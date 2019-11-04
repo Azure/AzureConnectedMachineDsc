@@ -1,0 +1,18 @@
+[ClassVersion("1.0.0.0"), FriendlyName("AzureConnectedMachineAgentDsc")]
+class MSFT_AzureConnectedMachineAgentDsc : OMI_BaseResource
+{
+    [Key, Description("The GUID Id for the Azure tenant.  This can be found using Get-AzSubscription.")] String TenantId;
+    [Required, Description("The GUID Id for the Azure subscription.  This can be found using Get-AzSubscription.")] String SubscriptionId;
+    [Required, Description("The name of the Azure Resource Group.  This can be pre-created using New-AzResourceGroup.")] String ResourceGroup;
+    [Required, Description("The Azure location name where the machine resource should be created.  The available list of locations can be found using 'Get-AzResourceProvider -ProviderNamespace Microsoft.HybridCompute'.")] String Location;
+    [Write, Description("The tags to be applied to the machine resource.  This is formatted as 'property=value,property=value'")] String Tags;
+    [Required, Description("The Application ID and Secret stored as a Credential object."), EmbeddedInstance("MSFT_Credential")] String Credential;
+    [Read, EmbeddedInstance("Reason")] String Reasons[];
+};
+
+[ClassVersion("1.0.0.0")]
+class Reason
+{
+    [Read] String Phrase;
+    [Read] String Code;
+};
