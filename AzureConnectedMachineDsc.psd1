@@ -47,7 +47,7 @@ PrivateData = @{
     PSData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
-        Tags = @('Azure','Azure Arc','Arc','Azure Connected Machine','DesiredStateConfiguration', 'DSC', 'DSCResource')
+        Tags = @('Azure','AzureArc','Arc','AzureConnectedMachine','DesiredStateConfiguration', 'DSC', 'DSCResource')
 
         # A URL to the license for this module.
         LicenseUri = 'https://github.com/azure/AzureConnectedMachineDsc/license'
@@ -65,7 +65,7 @@ PrivateData = @{
         # Prerelease = ''
 
         # Flag to indicate whether the module requires explicit user acceptance for install/update/save
-        RequireLicenseAcceptance = $true
+        RequireLicenseAcceptance = $false
 
     } # End of PSData hashtable
 
