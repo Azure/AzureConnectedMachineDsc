@@ -31,10 +31,6 @@ function Connect-AzConnectedMachineAgent {
         if (Test-AzConnectedMachineAgentConnection) {
             Write-Verbose "Machine $env:COMPUTERNAME is already onboarded.  Disconnecting, restarting service, and reconnecting."
             & azcmagent disconnect `
-                --resource-name $env:COMPUTERNAME `
-                --tenant-id $TenantId `
-                --subscription-id $SubscriptionId `
-                --resource-group $ResourceGroup `
                 --service-principal-id $Credential.UserName `
                 --service-principal-secret $Credential.GetNetworkCredential().Password
             Restart-Service 'HIMDS' -Force
