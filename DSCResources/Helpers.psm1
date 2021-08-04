@@ -1,9 +1,17 @@
 
-$script:httpserver = 'http://127.0.0.1:40342'
-$script:agentstatus = '/agentstatus'
-$script:metadata = '/metadata/instance'
-$script:apiversion = '2019-08-15'
-$script:headers = @{Metadata = $true }
+$script:himdsServer = 'http://127.0.0.1:40342'
+$script:himdsAgentStatus = '/agentstatus'
+$script:himdsMetadata = '/metadata/instance'
+$script:himdsApiVersion = '2019-08-15'
+$script:himdsHeaders = @{Metadata = $true }
+
+$script:microsoftLoginUrl = 'https://login.microsoftonline.com/'
+$script:microsoftTokenUrl = '/oauth2/token'
+
+$script:azureSubscriptionsUrl = 'https://management.azure.com/subscriptions/'
+$script:azureResourceGroups = '/resourcegroups/'
+$script:azureHybridComputeMachines = '/providers/Microsoft.HybridCompute/machines/'
+$script:azureApiVersion = '2020-08-02'
 
 $env:PATH = $env:PATH+";$env:ProgramFiles\AzureConnectedMachineAgent\"
 
@@ -24,42 +32,70 @@ function Connect-AzConnectedMachineAgent {
         $Tags,
 
         [Parameter(Mandatory = $true)]
-        [PSCredential]$Credential
+        [PSCredential]$Credential,
+
+        [bool]$ForceReplaceAgent = $false
     )
 
     if (Test-Path "$env:ProgramFiles\AzureConnectedMachineAgent\azcmagent.exe") {
         if (Test-AzConnectedMachineAgentConnection) {
             Write-Verbose "Machine $env:COMPUTERNAME is already onboarded.  Disconnecting, restarting service, and reconnecting."
             & azcmagent disconnect `
-                --resource-name $env:COMPUTERNAME `
-                --tenant-id $TenantId `
-                --subscription-id $SubscriptionId `
-                --resource-group $ResourceGroup `
                 --service-principal-id $Credential.UserName `
-                --service-principal-secret $Credential.GetNetworkCredential().Password
+                --service-principal-secret $Credential.GetNetworkCredential().Password | Out-Default
+
+            if ($LastExitCode -ne 0) {
+                throw "Couldn't disconnect from Azure ARC."
+            }
+
             Restart-Service 'HIMDS' -Force
+        } elseif ($ForceReplaceAgent) {
+            $params =
+            @{
+                TenantId       = $TenantId
+                Credential     = $Credential
+            }
+
+            $authToken = Get-AzureAuthenticationToken @params
+
+            $params =
+            @{
+                AuthToken      = $authToken
+                SubscriptionId = $SubscriptionId
+                ResourceGroup  = $ResourceGroup
+            }
+
+            if (Test-AzConnectedMachineAgentExistsInAzure @params) {
+                Write-Verbose "Machine $env:COMPUTERNAME already exists in azure. Force removing previous instance from Azure before proceeding."
+                Disconnect-ExistingAgentFromAzure @params
+            } else {
+                Write-Verbose "Machine $env:COMPUTERNAME doesn't exist in azure. Can continue to registering the agent."
+            }
         }
+
+        $agentArgs = New-Object System.Collections.ArrayList
+        $agentArgs.AddRange(@(
+            "connect",
+            "--tenant-id", $TenantId,
+            "--subscription-id", $SubscriptionId,
+            "--resource-group", $ResourceGroup
+            "--location", $Location
+            "--service-principal-id", $Credential.UserName
+            "--service-principal-secret", $Credential.GetNetworkCredential().Password
+        ))
 
         if ($null -ne $Tags) {
             Write-Verbose 'Attempting to register machine.'
-            & azcmagent connect `
-                --tenant-id $TenantId `
-                --subscription-id $SubscriptionId `
-                --resource-group $ResourceGroup `
-                --location $Location `
-                --service-principal-id $Credential.UserName `
-                --service-principal-secret $Credential.GetNetworkCredential().Password `
-                --tags $Tags
+            $agentArgs.AddRange(@("--tags", $Tags))
         }
         else {
             Write-Verbose 'Attempting to register machine.  No Tags were specified.'
-            & azcmagent connect `
-                --tenant-id $TenantId `
-                --subscription-id $SubscriptionId `
-                --resource-group $ResourceGroup `
-                --location $Location `
-                --service-principal-id $Credential.UserName `
-                --service-principal-secret $Credential.GetNetworkCredential().Password
+        }
+
+        & azcmagent $agentArgs | Out-Default
+
+        if ($LastExitCode -ne 0) {
+            throw "Couldn't connect to Azure ARC."
         }
     }
     else {
@@ -67,14 +103,32 @@ function Connect-AzConnectedMachineAgent {
     }
 }
 
+# If a machine with the same name as this is already present in Azure ARC force a delete of the old one
+# before we connect.
+function Disconnect-ExistingAgentFromAzure {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$AuthToken,
+
+        [Parameter(Mandatory = $true)]
+        [string]$SubscriptionId,
+
+        [Parameter(Mandatory = $true)]
+        [string]$ResourceGroup
+    )
+
+    $azureArcMachineUri = $script:azureSubscriptionsUrl + $SubscriptionId + $script:azureResourceGroups + $ResourceGroup + $script:azureHybridComputeMachines + $env:COMPUTERNAME + '?api-version=' + $script:azureApiVersion
+    Invoke-WebRequest -UseBasicParsing -Uri $azureArcMachineUri -Method 'Delete' -Headers @{ Authorization = "Bearer $authToken" }
+}
+
 function Get-AzConnectedMachineAgent {
     if (Test-AzConnectedMachineAgentService) {
-        $agentstatusuri = $script:httpserver + $script:agentstatus + '?api-version=' + $script:apiversion
-        $agentStatus = Invoke-WebRequest -UseBasicParsing -Uri $agentstatusuri -Headers $script:headers | ForEach-Object { $_.Content } | ConvertFrom-Json
+        $agentstatusuri = $script:himdsServer + $script:himdsAgentStatus + '?api-version=' + $script:himdsApiVersion
+        $agentStatus = Invoke-WebRequest -UseBasicParsing -Uri $agentstatusuri -Headers $script:himdsHeaders | ForEach-Object { $_.Content } | ConvertFrom-Json
 
         if ('' -ne $agentStatus.lastHeartBeat) {
-            $metadataUri = $script:httpserver + $script:metadata + '?api-version=' + $script:apiversion
-            $metadataInstance = Invoke-WebRequest -UseBasicParsing -Uri $metadataUri -Headers $script:headers | ForEach-Object { $_.Content } | ConvertFrom-Json | ForEach-Object { $_.compute }
+            $metadataUri = $script:himdsServer + $script:himdsMetadata + '?api-version=' + $script:himdsApiVersion
+            $metadataInstance = Invoke-WebRequest -UseBasicParsing -Uri $metadataUri -Headers $script:himdsHeaders | ForEach-Object { $_.Content } | ConvertFrom-Json | ForEach-Object { $_.compute }
         }
 
         if (Test-Path "$env:PROGRAMDATA\AzureConnectedMachineAgent\Config\agentconfig.json") {
@@ -94,6 +148,22 @@ function Get-AzConnectedMachineAgent {
     else {
         throw 'The Azure Hybrid Agent service is not running.'
     }
+}
+
+function Get-AzureAuthenticationToken {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$TenantId,
+
+        [Parameter(Mandatory = $true)]
+        [PSCredential]$Credential
+    )
+
+    $azureAuthUri = $script:microsoftLoginUrl + $TenantId + $script:microsoftTokenUrl
+    $authBody = 'grant_type=client_credentials&client_id=' + $Credential.UserName + '&client_secret=' + $Credential.GetNetworkCredential().Password + '&resource=https%3A%2F%2Fmanagement.azure.com%2F'
+    $authToken = Invoke-WebRequest -UseBasicParsing -Uri $azureAuthUri -Method 'POST' -Body $authBody | ForEach-Object { $_.Content } | ConvertFrom-Json | ForEach-Object { $_.access_token }
+
+    return $authToken
 }
 
 function Test-AzConnectedMachineAgent {
@@ -152,12 +222,36 @@ function Test-AzConnectedMachineAgentConnection {
 
 function Test-AzConnectedMachineAgentService {
     If ('Running' -eq (Get-Service | Where-Object { $_.Name -eq 'HIMDS' } | ForEach-Object { $_.Status })) {
-        $HIMDSuri = $script:httpserver + $script:agentstatus + '?api-version=' + $script:apiversion
-        $HIMDS = Invoke-WebRequest -UseBasicParsing -Uri $HIMDSuri -Headers $script:headers | ForEach-Object { $_.StatusCode }
+        $HIMDSuri = $script:himdsServer + $script:himdsAgentStatus + '?api-version=' + $script:himdsApiVersion
+        $HIMDS = Invoke-WebRequest -UseBasicParsing -Uri $HIMDSuri -Headers $script:himdsHeaders | ForEach-Object { $_.StatusCode }
         if ('200' -eq $HIMDS) {
             return $true
         }
         else { return $false }
     }
     else { return $false }
+}
+
+function Test-AzConnectedMachineAgentExistsInAzure {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$AuthToken,
+
+        [Parameter(Mandatory = $true)]
+        [string]$SubscriptionId,
+
+        [Parameter(Mandatory = $true)]
+        [string]$ResourceGroup
+    )
+
+    $azureArcMachineUri = $script:azureSubscriptionsUrl + $SubscriptionId + $script:azureResourceGroups + $ResourceGroup + $script:azureHybridComputeMachines + $env:COMPUTERNAME + '?api-version=' + $script:azureApiVersion
+    $response = try {
+        Invoke-WebRequest -UseBasicParsing -Uri $azureArcMachineUri -Headers @{ Authorization = "Bearer $AuthToken" }
+    } catch [System.Net.WebException] {
+        if ($_.Exception.Response.StatusCode -eq 404) {
+            return $false
+        }
+    }
+
+    return $true
 }

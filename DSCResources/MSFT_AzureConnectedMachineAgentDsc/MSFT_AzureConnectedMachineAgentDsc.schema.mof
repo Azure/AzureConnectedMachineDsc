@@ -6,6 +6,7 @@ class MSFT_AzureConnectedMachineAgentDsc : OMI_BaseResource
     [Required, Description("The name of the Azure Resource Group.  This can be pre-created using New-AzResourceGroup.")] String ResourceGroup;
     [Required, Description("The Azure location name where the machine resource should be created.  The available list of locations can be found using 'Get-AzResourceProvider -ProviderNamespace Microsoft.HybridCompute'.")] String Location;
     [Write, Description("The tags to be applied to the machine resource.  This is formatted as 'property=value,property=value'")] String Tags;
+    [Write, Description("If an agent with the same name already exists in the resource group, force a delete of the existing resource before connecting.")] Boolean ForceReplaceAgent;
     [Required, Description("The Application ID and Secret stored as a Credential object."), EmbeddedInstance("MSFT_Credential")] String Credential;
     [Read, EmbeddedInstance("Reason")] String Reasons[];
 };

@@ -18,7 +18,9 @@ function Get-TargetResource {
         [string]$Tags,
 
         [Parameter(Mandatory = $true)]
-        [PSCredential]$Credential
+        [PSCredential]$Credential,
+
+        [bool]$ForceReplaceAgent = $false
     )
 
     $AzConnectedMachineAgent = Get-AzConnectedMachineAgent
@@ -91,7 +93,9 @@ function Set-TargetResource {
         [string]$Tags,
 
         [Parameter(Mandatory = $true)]
-        [PSCredential]$Credential
+        [PSCredential]$Credential,
+
+        [bool]$ForceReplaceAgent = $false
     )
 
     Connect-AzConnectedMachineAgent @PSBoundParameters
@@ -115,7 +119,9 @@ function Test-TargetResource {
         [string]$Tags,
 
         [Parameter(Mandatory = $true)]
-        [PSCredential]$Credential
+        [PSCredential]$Credential,
+
+        [bool]$ForceReplaceAgent = $false
     )
     $Params =
     @{

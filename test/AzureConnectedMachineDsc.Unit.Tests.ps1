@@ -50,20 +50,48 @@ Describe 'Module Tests' -Tag 'Unit' {
         }
 
         Context 'function Connect-AzConnectedMachineAgent' {
-            
+
             Mock -CommandName 'azcmagent' -MockWith { 'azcmagent' } -Verifiable
+
+            # Force this to be successful
+            $LastExitCode = 0
 
             It 'should attempt to connect when the agent is installed but not connected' {
                 Mock -CommandName 'Test-Path' -MockWith { $true } -Verifiable
                 Mock -CommandName 'Test-AzConnectedMachineAgentConnection' -MockWith { $false } -Verifiable
-                Connect-AzConnectedMachineAgent @connectParams | Should -Be 'azcmagent'
+                Connect-AzConnectedMachineAgent @connectParams
                 Assert-VerifiableMock
             }
             It 'should attempt to disconnect and reconnect when the agent is installed and connected' {
                 Mock -CommandName 'Test-Path' -MockWith { $true } -Verifiable
                 Mock -CommandName 'Test-AzConnectedMachineAgentConnection' -MockWith { $true } -Verifiable
                 Mock -CommandName 'Restart-Service' -Verifiable
-                Connect-AzConnectedMachineAgent @connectParams | Should -Be @('azcmagent', 'azcmagent')
+                Connect-AzConnectedMachineAgent @connectParams
+                Assert-VerifiableMock
+            }
+            It 'should not call to remove the agent from azure when ForceReplaceAgent is set but the agent does not exist in Azure' {
+                Mock -CommandName 'Test-Path' -MockWith { $true } -Verifiable
+                Mock -CommandName 'Get-AzureAuthenticationToken' -MockWith { 'test1234' } -Verifiable
+                Mock -CommandName 'Test-AzConnectedMachineAgentExistsInAzure' -MockWith { $false } -Verifiable
+                Mock -CommandName 'Disconnect-ExistingAgentFromAzure' -MockWith { }
+                Mock -CommandName 'Test-AzConnectedMachineAgentConnection' -MockWith { $false } -Verifiable
+
+                $newConnectParams = $connectParams.Clone()
+                $newConnectParams['ForceReplaceAgent'] = $true
+                Connect-AzConnectedMachineAgent @newConnectParams
+                Assert-VerifiableMock
+                Assert-MockCalled Disconnect-ExistingAgentFromAzure -Times 0
+            }
+            It 'should call to remove the agent from azure when ForceReplaceAgent is set and the agent exists' {
+                Mock -CommandName 'Test-Path' -MockWith { $true } -Verifiable
+                Mock -CommandName 'Get-AzureAuthenticationToken' -MockWith { 'test1234' } -Verifiable
+                Mock -CommandName 'Test-AzConnectedMachineAgentExistsInAzure' -MockWith { $true } -Verifiable
+                Mock -CommandName 'Disconnect-ExistingAgentFromAzure' -MockWith { } -Verifiable
+                Mock -CommandName 'Test-AzConnectedMachineAgentConnection' -MockWith { $false } -Verifiable
+
+                $newConnectParams = $connectParams.Clone()
+                $newConnectParams['ForceReplaceAgent'] = $true
+                Connect-AzConnectedMachineAgent @newConnectParams
                 Assert-VerifiableMock
             }
             It 'should return an error if the agent is not installed' {
@@ -165,6 +193,59 @@ Describe 'Module Tests' -Tag 'Unit' {
                 $TestService = Test-AzConnectedMachineAgentService
                 $TestService | Should -BeOfType boolean
                 $TestService | Should -BeFalse
+                Assert-VerifiableMock
+            }
+        }
+
+        Context 'function Get-AzureAuthenticationToken' {
+            $params = @{
+                TenantId       = (new-guid).Guid
+                Credential     = New-Object System.Management.Automation.PSCredential ('appid', ('secret' | ConvertTo-SecureString -AsPlainText -Force))
+            }
+
+            It 'should get Azure credentials' {
+                Mock -CommandName Invoke-WebRequest -MockWith { @{content = '{"access_token":"test1234"}' } } -Verifiable
+                Get-AzureAuthenticationToken @params | Should -Be 'test1234'
+                Assert-VerifiableMock
+            }
+        }
+
+        Context 'function Disconnect-ExistingAgentFromAzure' {
+            $params = @{
+                AuthToken      = 'test1234'
+                SubscriptionId = (new-guid).Guid
+                ResourceGroup  = 'resource_group_name'
+            }
+
+            It 'should call to remove the agent when it is in Azure' {
+                Mock -CommandName Invoke-WebRequest -MockWith { }
+                Disconnect-ExistingAgentFromAzure @params
+                Assert-VerifiableMock
+            }
+        }
+
+        Context 'function Test-AzConnectedMachineAgentExistsInAzure' {
+            $params = @{
+                AuthToken      = 'test1234'
+                SubscriptionId = (new-guid).Guid
+                ResourceGroup  = 'resource_group_name'
+            }
+
+            It 'should return false when the agent is not in Azure' {
+                Mock -CommandName Invoke-WebRequest -MockWith {
+                    $status = [System.Net.WebExceptionStatus]::ConnectionClosed
+                    $response = New-MockObject -type 'System.Net.HttpWebResponse'
+                    $response | Add-Member -MemberType noteProperty -Name 'StatusCode' -Value 404 -force
+                    $exception = New-Object System.Net.WebException "" , $null, $status, $response
+                    Throw $exception
+                } -Verifiable
+                Test-AzConnectedMachineAgentExistsInAzure @params | Should -BeFalse
+                Assert-VerifiableMock
+            }
+
+            It 'should return true when the agent is in Azure' {
+                Mock -CommandName Invoke-WebRequest -MockWith { } -Verifiable
+                Test-AzConnectedMachineAgentExistsInAzure @params | Should -BeTrue
                 Assert-VerifiableMock
             }
         }
