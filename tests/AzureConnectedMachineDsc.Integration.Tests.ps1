@@ -1,15 +1,10 @@
-$ModuleManifestName = 'AzureConnectedMachineDsc.psd1'
-$ModuleManifestPath = "$PSScriptRoot\..\$ModuleManifestName"
-Import-Module $ModuleManifestPath -Force
-Import-Module $PSScriptRoot\..\DscResources\Helpers.psm1 -Force
-
-Describe 'Module Manifest Tests' -Tag 'Integration' {
+Describe  -Tag 'Integration' 'Module Manifest Tests' {
 
     Context 'Load Configuration' {
 
-        if (test-path '.\examples\private.configurationdata.ps1' -ErrorAction SilentlyContinue)
+        if (test-path '.\examples\private.ConfigurationData.ps1' -ErrorAction SilentlyContinue)
         {
-            . .\examples\private.configurationdata.ps1
+            . .\examples\private.ConfigurationData.ps1
         } else {
             $test_params = @{
                 TenantId = (new-guid).guid

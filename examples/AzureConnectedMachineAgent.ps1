@@ -1,6 +1,6 @@
 Configuration AzureConnectedMachineAgent {
     Import-DscResource -ModuleName PSDSCResources
-    Import-DscResource -Module @{ModuleName = 'AzureConnectedMachineDsc'; ModuleVersion = '1.0.1.0'}
+    Import-DscResource -Module @{ModuleName = 'AzureConnectedMachineDsc'; ModuleVersion = '1.1.1'}
 
     Node $AllNodes.NodeName
     {
@@ -33,4 +33,4 @@ Configuration AzureConnectedMachineAgent {
 
 . $PSScriptRoot\private.ConfigurationData.ps1
 
-AzureConnectedMachineAgent @psboundparameters -out c:\dsc -configurationdata $configurationData
+AzureConnectedMachineAgent -out c:\dsc -configurationdata $configurationData
