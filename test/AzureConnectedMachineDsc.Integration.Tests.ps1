@@ -20,10 +20,10 @@ Describe 'Module Manifest Tests' -Tag 'Integration' {
             } }
 
         It 'runs the example script without error' {
-            { . $PSScriptRoot\..\examples\AzureConnectedMachineAgent.ps1 @test_params} | Should -Not -Throw
+            { . $PSScriptRoot\..\examples\AzureConnectedMachineAgent.ps1} | Should -Not -Throw
         }
         It 'produces a connfiguration named AzureConnectedMachineAgent' {
-            . $PSScriptRoot\..\examples\AzureConnectedMachineAgent.ps1 @test_params
+            . $PSScriptRoot\..\examples\AzureConnectedMachineAgent.ps1
             Get-Command -Type 'Configuration' | ForEach-Object { $_.Name } | Should -Contain 'AzureConnectedMachineAgent'
         }
         It 'produces a mof file' {

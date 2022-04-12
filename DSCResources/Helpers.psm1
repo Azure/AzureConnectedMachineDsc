@@ -27,39 +27,45 @@ function Connect-AzConnectedMachineAgent {
         [PSCredential]$Credential
     )
 
+    # Credit to @strottos for improving this function by adding error catches and
+    # simplifying arguments, making the script much easier to read.
     if (Test-Path "$env:ProgramFiles\AzureConnectedMachineAgent\azcmagent.exe") {
         if (Test-AzConnectedMachineAgentConnection) {
             Write-Verbose "Machine $env:COMPUTERNAME is already onboarded.  Disconnecting, restarting service, and reconnecting."
             & azcmagent disconnect `
-                --resource-name $env:COMPUTERNAME `
-                --tenant-id $TenantId `
-                --subscription-id $SubscriptionId `
-                --resource-group $ResourceGroup `
                 --service-principal-id $Credential.UserName `
-                --service-principal-secret $Credential.GetNetworkCredential().Password
-            Restart-Service 'HIMDS' -Force
+                --service-principal-secret $Credential.GetNetworkCredential().Password | Out-Default
+            
+                if ($LastExitCode -ne 0) {
+                    throw "Couldn't disconnect from Azure ARC."
+                }
+
+                Restart-Service 'HIMDS' -Force
         }
+        
+        $agentArgs = New-Object System.Collections.ArrayList
+        $agentArgs.AddRange(@(
+            "connect",
+            "--tenant-id", $TenantId,
+            "--subscription-id", $SubscriptionId,
+            "--resource-group", $ResourceGroup
+            "--location", $Location
+            "--service-principal-id", $Credential.UserName
+            "--service-principal-secret", $Credential.GetNetworkCredential().Password
+        ))
 
         if ($null -ne $Tags) {
             Write-Verbose 'Attempting to register machine.'
-            & azcmagent connect `
-                --tenant-id $TenantId `
-                --subscription-id $SubscriptionId `
-                --resource-group $ResourceGroup `
-                --location $Location `
-                --service-principal-id $Credential.UserName `
-                --service-principal-secret $Credential.GetNetworkCredential().Password `
-                --tags $Tags
+            $agentArgs.AddRange(@("--tags", $Tags))
         }
         else {
             Write-Verbose 'Attempting to register machine.  No Tags were specified.'
-            & azcmagent connect `
-                --tenant-id $TenantId `
-                --subscription-id $SubscriptionId `
-                --resource-group $ResourceGroup `
-                --location $Location `
-                --service-principal-id $Credential.UserName `
-                --service-principal-secret $Credential.GetNetworkCredential().Password
+        }
+
+        & azcmagent $agentArgs | Out-Default
+
+        if ($LastExitCode -ne 0) {
+            throw "Couldn't connect to Azure ARC."
         }
     }
     else {
