@@ -1,15 +1,10 @@
-$ModuleManifestName = 'AzureConnectedMachineDsc.psd1'
-$ModuleManifestPath = "$PSScriptRoot\..\$ModuleManifestName"
-Import-Module $ModuleManifestPath -Force
-Import-Module $PSScriptRoot\..\DscResources\Helpers.psm1 -Force
-
-Describe 'Module Manifest Tests' -Tag 'Integration' {
+Describe  -Tag 'Integration' 'Module Manifest Tests' {
 
     Context 'Load Configuration' {
 
-        if (test-path '.\examples\private.configurationdata.ps1' -ErrorAction SilentlyContinue)
+        if (test-path '.\examples\private.ConfigurationData.ps1' -ErrorAction SilentlyContinue)
         {
-            . .\examples\private.configurationdata.ps1
+            . .\examples\private.ConfigurationData.ps1
         } else {
             $test_params = @{
                 TenantId = (new-guid).guid
@@ -20,10 +15,10 @@ Describe 'Module Manifest Tests' -Tag 'Integration' {
             } }
 
         It 'runs the example script without error' {
-            { . $PSScriptRoot\..\examples\AzureConnectedMachineAgent.ps1 @test_params} | Should -Not -Throw
+            { . $PSScriptRoot\..\examples\AzureConnectedMachineAgent.ps1} | Should -Not -Throw
         }
         It 'produces a connfiguration named AzureConnectedMachineAgent' {
-            . $PSScriptRoot\..\examples\AzureConnectedMachineAgent.ps1 @test_params
+            . $PSScriptRoot\..\examples\AzureConnectedMachineAgent.ps1
             Get-Command -Type 'Configuration' | ForEach-Object { $_.Name } | Should -Contain 'AzureConnectedMachineAgent'
         }
         It 'produces a mof file' {
