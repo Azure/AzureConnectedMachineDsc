@@ -28,6 +28,12 @@ Configuration AzureConnectedMachineAgent {
             Tags            = $Node.Tags
             Credential      = $Node.Credential
         }
+
+        AzcmagentConfig Ports
+        {
+            IsSingleInstance = 'Yes'
+            incomingconnections_ports = '22'
+        }
     }
 }
 
