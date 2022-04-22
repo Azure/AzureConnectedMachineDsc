@@ -3,6 +3,8 @@
 This repository contains the module for Windows PowerShell Desired State Configuration to install
 and configure the Azure Connected Machine Agent.
 
+**This module is community supported, not an official Microsoft production/solution.**
+
 ## Contents
 
 The files and folders in this repo include:
