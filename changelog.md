@@ -1,3 +1,7 @@
+**1.2.0**
+
+- Add AzcmagentConfig resource and supporting functions
+
 **1.1.1.0**
 
 - Refactor as class based resource

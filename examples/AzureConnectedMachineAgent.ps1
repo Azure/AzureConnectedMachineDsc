@@ -1,6 +1,6 @@
 Configuration AzureConnectedMachineAgent {
     Import-DscResource -ModuleName PSDSCResources
-    Import-DscResource -Module @{ModuleName = 'AzureConnectedMachineDsc'; ModuleVersion = '1.1.1'}
+    Import-DscResource -Module @{ModuleName = 'AzureConnectedMachineDsc'; ModuleVersion = '1.2.0'}
 
     Node $AllNodes.NodeName
     {
@@ -27,6 +27,12 @@ Configuration AzureConnectedMachineAgent {
             Location        = $Node.Location
             Tags            = $Node.Tags
             Credential      = $Node.Credential
+        }
+
+        AzcmagentConfig Ports
+        {
+            IsSingleInstance = 'Yes'
+            incomingconnections_ports = '22','2222'
         }
     }
 }

@@ -1,31 +1,33 @@
 # Azure Connected Machine module for Windows PowerShell DSC
 
-This repository contains the module for Windows PowerShell Desired State Configuration to install and configure
-the Azure Connected Machine Agent.
+This repository contains the module for Windows PowerShell Desired State Configuration to install
+and configure the Azure Connected Machine Agent.
+
+**This module is community supported, not an official Microsoft production/solution.**
 
 ## Contents
 
 The files and folders in this repo include:
 
-| File/folder          | Description                                  |
-|----------------------|----------------------------------------------|
-| `DSCResources`       | Folder containing each DSC resource          |
-| `examples`           | Folder containing configuration examples     |
-| `test`               | Folder containing unit and integration tests |
-| `CHANGELOG.md`       | List of changes to the sample.               |
-| `CODE_OF_CONDUCT.md` | Code of conduct for project contribution.    |
-| `README.md`          | This README file.                            |
-| `LICENSE`            | The license for the project.                 |
+| File/folder                     | Description                                  |
+|---------------------------------|----------------------------------------------|
+| `examples`                      | Folder containing configuration examples     |
+| `test`                          | Folder containing unit and integration tests |
+| `AzureConnectedMachineDsc.psd1` | Module manifest                              |
+| `AzureConnectedMachineDsc.psm1` | PowerShell module                            |
+| `CHANGELOG.md`                  | List of changes to the sample                |
+| `CODE_OF_CONDUCT.md`            | Code of conduct for project contribution     |
+| `README.md`                     | This README file                             |
+| `LICENSE`                       | The license for the project                  |
 
 ## Resources included in this module
 
 - **AzureConnectedMachineAgentDsc**: Used to automate configuration of the Azure Connected Machine Agent including validation of the connection to Azure and the metadata such as the Resource Group and Tags information.
+- **AzcmagentConfig**: Used to configure settings on the Azure Connected Machine Agent.
 
 ## Requirements
 
-The minimum PowerShell version required is 4.0, which ships in Windows 8.1
-or Windows Server 2012R2 (or higher versions). The preferred version is
-PowerShell 5.0 or higher, which ships with Windows 10 or Windows Server 2016.
+The minimum PowerShell version required is 5.1.
 
 ## Setup
 
@@ -45,9 +47,8 @@ Azure Connected Machine DSC resoures available:
 
 ## Examples
 
-The resources in this module are intended to manage the Azure Connected Machine Agent configuration. A complete
-example is provided that also uses community resources to download and install the agent, and to verify the state
-of the agent service.
+The resources in this module are intended to manage the Azure Connected Machine Agent configuration. A complete example is provided that also uses community resources to download and install the agent,
+and to verify the state of the agent service.
 
 PowerShell script:
 
@@ -55,28 +56,10 @@ PowerShell script:
 & .\examples\AzureConnectedMachineAgent.ps1
 ```
 
-The script parameters include:
-
-- **TenantID**: The id (guid) of the Azure tenant
-- **SubscriptionId**: The id (guid) of the Azure subscription
-- **ResourceGroup**: The name of the resource group where the connect machine resource should be created
-- **Location**: The Azure location where the connected machine resource should be created
-- **Tags**: String array of tags that should be applied to the connected machine resource
-- **Credential**: A PowerShell credential object with the AppId and Secret used to register machines at scale
-
 The Azure Connected Machine Agent supports connecting through an http proxy service.  The
-proxy details are provided to the agent using envionment variables, which could also be managed by DSC
-using the ComputeManagementDsc module.  For more information on the proxy details, see the
+proxy details are provided to the agent using envionment variables, which could also be managed by
+DSC using the ComputeManagementDsc module.  For more information on the proxy details, see the
 documentation for Azure Connect Machine Agent.
-
-## Adding to existing configurations
-
-This resource can be added to existing DSC configurations to represent an end-to-end configuration
-for a machine.  For example, you might wish to add this resource to a configuration that sets
-secure operating system settings.
-
-The **CompsiteResource** module from the PowerShell Gallery can be used to create a composite
-resource of the example configuration, to further simplify combining configurations.
 
 ## Contributing
 

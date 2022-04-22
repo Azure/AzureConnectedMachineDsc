@@ -1,7 +1,7 @@
 @{
 RootModule = './AzureConnectedMachineDsc.psm1'
 
-ModuleVersion = '1.1.1'
+ModuleVersion = '1.2.0'
 
 GUID = '4e7bcccd-6002-47b5-8b9f-fcca5975d445'
 
@@ -13,9 +13,9 @@ Copyright = '(c) Microsoft Corporation. All rights reserved.'
 
 Description = 'Installs the Azure Arc agent on a Windows instance and connects to Azure'
 
-FunctionsToExport = 'Get-AzConnectedMachineAgent', 'Connect-AzConnectedMachineAgent', 'Test-AzConnectedMachineAgent'
+FunctionsToExport = 'Get-AzConnectedMachineAgent', 'Connect-AzConnectedMachineAgent', 'Test-AzConnectedMachineAgent', 'Get-AzConnectedMachineAgentConfig','Set-AzConnectedMachineAgentConfig','Test-AzConnectedMachineAgentConfig'
 
-DscResourcesToExport = 'AzureConnectedMachineAgentDsc'
+DscResourcesToExport = 'AzureConnectedMachineAgentDsc','AzcmagentConfig'
 
 PrivateData = @{
 
