@@ -30,13 +30,13 @@ function Connect-AzConnectedMachineAgent {
             Write-Verbose "Machine $env:COMPUTERNAME is already onboarded.  Disconnecting, restarting service, and reconnecting."
             $disconnect = & azcmagent disconnect `
                 --service-principal-id $Credential.UserName `
-                --service-principal-secret $Credential.GetNetworkCredential().Password #`
-            #--json
+                --service-principal-secret $Credential.GetNetworkCredential().Password `
+                --json
             
-            #$disconnect = $disconnect | ConvertFrom-Json
+            $disconnect = $disconnect | ConvertFrom-Json
             
-            if ($LastExitCode -ne 0) {
-                throw 'The disconnect command failed.' #$disconnect.error.message
+            if ($disconnect.status -eq 'failed') {
+                throw "The disconnect command failed.`nMessage from azcmagent: $($disconnect.error.message)"
             }
 
             Restart-Service 'HIMDS' -Force
@@ -51,6 +51,8 @@ function Connect-AzConnectedMachineAgent {
                 "--location", $Location
                 "--service-principal-id", $Credential.UserName
                 "--service-principal-secret", $Credential.GetNetworkCredential().Password
+                "--silent"
+                "--json"
             ))
 
         if ($null -ne $Tags) {
@@ -61,11 +63,11 @@ function Connect-AzConnectedMachineAgent {
             Write-Verbose 'Attempting to register machine.  No Tags were specified.'
         }
 
-        $connect = & azcmagent $agentArgs #--json
-        #$connect = $connect | ConvertFrom-Json
+        $connect = & azcmagent $agentArgs
+        $connect = $connect | ConvertFrom-Json
 
-        if ($LastExitCode -ne 0) {
-            throw 'The connection failed. Verify network, name resolution, and that an existing resource with the same name does not exist.' #$connect.error.message
+        if ($connect.status -eq 'failed') {
+            throw "The connection failed. Verify network, name resolution, and that an existing resource with the same name does not exist.`nMessage from azcmagent: $($connect.error.message)"
         }
     }
     else {
@@ -261,15 +263,17 @@ function Test-AzConnectedMachineAgentConfig {
         [boolean] $guestconfiguration_enabled
     )
     $return = $true
+    $params = @{}
+    foreach ($param in $PSBoundParameters.Keys) {$params[$param] = $PSBoundParameters[$param]}
     foreach ($setting in (Get-AzConnectedMachineAgentConfigValues)) {
         $name = $setting.DisplayName -replace '\.','_'
-        $paramValue = $PSBoundParameters["$name"]
+        $paramValue = $params[$name]
         $value = $setting.value
         if (!$value) {$value = '[not configured]'}
         if (!$paramValue) {$paramValue = '[not configured]'}
         $verbose = "Test $name value of $value should equal $paramValue"
         Write-Verbose $verbose
-        if ($setting.value -ne $paramValue) {$return = $false}
+        if ($value -ne $paramValue) {$return = $false}
     }
     return $return
 }
