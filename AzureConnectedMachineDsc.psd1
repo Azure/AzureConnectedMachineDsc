@@ -1,7 +1,7 @@
 @{
 RootModule = './AzureConnectedMachineDsc.psm1'
 
-ModuleVersion = '1.4.0'
+ModuleVersion = '1.4.1'
 
 GUID = '4e7bcccd-6002-47b5-8b9f-fcca5975d445'
 
