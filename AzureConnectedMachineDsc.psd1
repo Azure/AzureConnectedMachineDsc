@@ -5,13 +5,9 @@ ModuleVersion = '1.4.0'
 
 GUID = '4e7bcccd-6002-47b5-8b9f-fcca5975d445'
 
-Author = 'Michael Greene'
+Author = 'DSC Community'
 
-CompanyName = 'Microsoft Corporation'
-
-Copyright = '(c) Microsoft Corporation. All rights reserved.'
-
-Description = 'Installs the Azure Arc agent on a Windows instance and connects to Azure'
+Description = 'Community supported sample project. Installs the Azure Arc agent on a Windows instance and connects to Azure.'
 
 FunctionsToExport = 'Get-AzConnectedMachineAgent', 'Connect-AzConnectedMachineAgent', 'Test-AzConnectedMachineAgent', 'Get-AzConnectedMachineAgentConfig','Set-AzConnectedMachineAgentConfig','Test-AzConnectedMachineAgentConfig'
 
