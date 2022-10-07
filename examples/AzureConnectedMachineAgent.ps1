@@ -8,8 +8,8 @@ Configuration AzureConnectedMachineAgent {
         {
             Name        = 'Azure Connected Machine Agent'
             Ensure      = 'Present'
-            ProductId   = '{B3A65ABF-11A7-4C13-9BA7-3BFAB7B79760}'
-            Path        = 'https://download.microsoft.com/download/e/a/4/ea4ea4a9-a947-4c94-995c-52eaf200f651/AzureConnectedMachineAgent.msi'
+            ProductId   = '{D0AC7A41-6190-4F9C-95B8-2EA8D580FB4A}'
+            Path        = 'https://aka.ms/AzureConnectedMachineAgent.msi'
         }
 
         Service HIMDS
