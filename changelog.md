@@ -1,4 +1,8 @@
-**1.2.0**
+**1.4.0**
+
+- Call full path to azcmagent.exe in .psm1
+
+**1.3.0**
 
 - Add AzcmagentConfig resource and supporting functions
 
