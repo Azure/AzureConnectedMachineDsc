@@ -63,7 +63,7 @@ function Connect-AzConnectedMachineAgent {
             Write-Verbose 'Attempting to register machine.  No Tags were specified.'
         }
 
-        $connect = & azcmagent $agentArgs
+        $connect = & "$env:ProgramFiles\AzureConnectedMachineAgent\azcmagent.exe" $agentArgs
         $connect = $connect | ConvertFrom-Json
 
         if ($connect.status -eq 'failed') {
@@ -187,7 +187,7 @@ function Get-AzConnectedMachineAgentConfigValues {
         Write-Verbose 'Running azcmagent config list and get to retrieve current values; return object.'
 
         $list = New-Object -TypeName 'PSObject'
-        & azcmagent config list --json | ConvertFrom-Json | ForEach-Object { $_.LocalSettings } | ForEach-Object { Add-Member -InputObject $list -MemberType NoteProperty -Name $_.Key -Value $_.Value }
+        & "$env:ProgramFiles\AzureConnectedMachineAgent\azcmagent.exe" config list --json | ConvertFrom-Json | ForEach-Object { $_.LocalSettings } | ForEach-Object { Add-Member -InputObject $list -MemberType NoteProperty -Name $_.Key -Value $_.Value }
 
         $info = & azcmagent config info --json | ConvertFrom-Json
         for ($i = 0; $i -lt $info.Count; $i++) {
