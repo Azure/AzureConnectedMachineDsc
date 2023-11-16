@@ -8,7 +8,7 @@ Configuration AzureConnectedMachineAgent {
         {
             Name        = 'Azure Connected Machine Agent'
             Ensure      = 'Present'
-            ProductId   = '{D0AC7A41-6190-4F9C-95B8-2EA8D580FB4A}'
+            ProductId   = '{BC10321B-15F3-4FA2-B1E9-D776C9D70001}'
             Path        = 'https://aka.ms/AzureConnectedMachineAgent.msi'
         }
 
